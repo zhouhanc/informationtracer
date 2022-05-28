@@ -2,7 +2,6 @@ import requests
 import time
 from pprint import pprint
 import json
-import argparse
 import os
 
 TRACE_URL = 'https://informationtracer.com/api/v1/submit'
@@ -73,6 +72,7 @@ def trace(term=None, output_dir=None,
 
 
 if __name__ == '__main__':
+    import argparse
     parser = argparse.ArgumentParser(description='search parameters.')
     parser.add_argument('--term', type=str, default=None, help='term to search')
     parser.add_argument('--token', type=str, required=True, help='API token')
