@@ -10,7 +10,6 @@ setup(
     license='BSD 2-clause',
     packages=['informationtracer'],
     install_requires=['requests',
-                      'argparse',
                       ],
 
     classifiers=[
