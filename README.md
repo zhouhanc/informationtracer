@@ -3,7 +3,7 @@ Information Tracer API Python library
 
 ### Who we are
 - [Information Tracer](https://informationtracer.com) is a system to trace and summarize information across multiple social media platforms. We current cover 5 platforms -- Twitter, Facebook, Reddit, Youtube and Gab. We are adding Telegram and Instagram.
-- This repo provides a Python interface to trace any term (URL, keyword) via our API.
+- This repo provides a Python interface to trace any URL / keyword / hashtag via our API.
 - To learn more about system design please check [our paper](http://ceur-ws.org/Vol-2890/paper3.pdf) 
 
 __Due to API limit, each trace call will take 1-3 minutes depending on data volume.__
@@ -25,11 +25,16 @@ pip install informationtracer
 ### usage
 ```python
 from informationtracer import informationtracer
-informationtracer.trace(term='exposefauci.com', token=YOUR_TOKEN, output_dir='output_test')
+informationtracer.trace(keyword='exposefauci.com', token=YOUR_TOKEN, output_dir='output_test')
 
 ```
 
-As long as you provide either `output_dir` or `output_filename`, the result will be saved on a local json file. You can then load the result from the json file
+Parameters
+
+- `keyword`: can be a string (`"BLM"`) or a list of strings (`["BLM", "GunControl", "exposefauci.com"]`)
+- `output_dir`: directory under which data will be saved. For each job, a json file name with name `job_id.json` will be created. For example: `/User/test/`
+- `output_filename`: the exact path which the data will be saved. For example: `/User/test/result.json` (if you specify `output_filename`, it will overwrite `output_dir`)
+
 
 ### result
 ```
