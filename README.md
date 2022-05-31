@@ -2,9 +2,12 @@ Information Tracer API Python library
 ----------------------------
 
 ### Who we are
-- [Information Tracer](https://informationtracer.com) is a system to trace and summarize information across multiple social media platforms. We current cover 5 platforms -- Twitter, Facebook, Reddit, Youtube and Gab. We are adding Telegram and Instagram.
-- This repo provides a Python interface to trace any URL / keyword / hashtag via our API.
-- To learn more about system design please check [our paper](http://ceur-ws.org/Vol-2890/paper3.pdf) 
+- Information Tracer provides fine-grained intelligence about how information (URL, keyword, hashtag) spreads online to journalists, researchers and technology companies. We implement a set of algorithms to quantify the spread patterns and highlight suspicious behaviors. 
+- We currently cover 5 platforms -- Twitter, Facebook, Reddit, Youtube and Gab.
+- Below is a diagram of our system design. To learn more please check [our paper](http://ceur-ws.org/Vol-2890/paper3.pdf) 
+
+![Information Tracer architecture](./img/information-tracer-pipeline.pdf)
+
 
 __Due to API limit, each trace call will take 1-3 minutes depending on data volume.__
 
@@ -98,12 +101,24 @@ The payload looks something like this
 ```
 
 
-### behaviors we currently track
+### Behaviors we currently track
+- What is a behavior? A behavior is a suspicious information spread pattern based on an abnormal metric value, which is calculated from raw data. 
+- How do we define abnormal? Assuming the metric we calculate is `the average tweet per user sharing a URL`.We have already calculated its value for tens of thousands of URLs. If a new URL's metric is above 95 percentile of the sample distrubution, we will add a behavior label to that URL.
+
 | Behavior | Description |
 | --- | --- |
 | multiple_platform_spread | URL/Keyword is shared on 3 or more platforms, each platform having at least 100 impressions |
 | twitter_amplification | average tweet per user is more than 2, or percent of tweets from top 10 percent users is more than 30 |
 | youtube_amplification | total number of youtube videos is more than 10 |
+
+
+### Web interace 
+- To help people visualize the information, we provide a web interface available at [https://informationtracer.com](https://informationtracer.com). 
+
+- To visualize a term you searched recently, you can visit `https://informationtracer.com/?url=REPLACE_WITH_YOUR_TERM`. 
+
+![Screenshot of Information Tracer Wen Interface](./img/information-tracer-web-interface-screenshot.png)
+
 
 
 ### media coverage
