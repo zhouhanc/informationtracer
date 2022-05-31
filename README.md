@@ -6,7 +6,7 @@ Information Tracer API Python library
 - We currently cover 5 platforms -- Twitter, Facebook, Reddit, Youtube and Gab.
 - Below is a diagram of our system design. To learn more please check [our paper](http://ceur-ws.org/Vol-2890/paper3.pdf) 
 
-![Information Tracer architecture](./img/information-tracer-pipeline.pdf)
+![Information Tracer architecture](./img/information-tracer-pipeline.png)
 
 
 __Due to API limit, each trace call will take 1-3 minutes depending on data volume.__
