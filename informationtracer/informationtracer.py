@@ -6,110 +6,109 @@ import os
 
 TRACE_URL = 'https://informationtracer.com/api/v1/submit'
 RESULT_URL = 'https://informationtracer.com/api/v1/result'
+JOB_STATUS_URL = 'https://informationtracer.com/job_status'
 
-def trace(keyword=None, output_dir=None, 
-    output_filename=None, input_filename=None, 
-    timeout=180, is_async=False, no_print=False, token=None):
+def trace(query=None, skip_result=False, result_filename=None, 
+    timeout=240, verbose=True, token=None):
     """
-        Submit a keyword, wait for the job to finish, and collect the results
-
-        Preference: input_filename > keyword
+        Submit a query, wait for the job to finish, and collect the results
+        
+        Return: id_hash256 (unique id of the search)
     """
-    if keyword is None and input_filename is None:
-        print('NOTE: must specify a keyword or an input_filename')
+    if query is None:
+        print('query cannot be none')
         return
 
-    if input_filename:
-        # read queries one by one
-        with open(input_filename, 'r') as f_in:
-            keywords = [line.strip() for line in f_in]
-    else:
-        if isinstance(keyword, str):
-            keywords = [keyword]
-        else:
-            keywords = keyword
+    response = requests.post(TRACE_URL, 
+                             json={'term': query, 
+                                   'token': token}
+                                   )
+    
+    pprint(response.json())
+    if 'error' in response.json():  
+        print('error when submitting the query.')          
+        return
 
-    # keywords is a list of keyword
-    for term in keywords:
-        response = requests.post(TRACE_URL, 
-                                 json={'term': term, 
-                                       'token': token}
-                                       )
-        pprint(response.json())
-        if 'error' in response.json():            
-            return
+    task_status = None    
+    start = time.time()
+    end = time.time()
+    job_id = response.json()['job_id']
+    id_hash256 = None
 
-        task_status = None    
-        start = time.time()
-        end = time.time()
-        job_id = response.json()['job_id']
+    while task_status != 'finished' and int(end - start) <= timeout:
+        full_url = '{}/{}'.format(JOB_STATUS_URL, job_id)
+        # TODO: add try catch in case of connection error (Connection aborted)
 
-        while task_status != 'finished' and int(end - start) <= timeout:
-            full_url = 'https://informationtracer.com/jobs/{}'.format(job_id)
-            # TODO: add try catch in case of connection error (Connection aborted)
+        try:
             response = requests.get(full_url)
-            # print(response.status_code)
-            pprint(response.json()['data']['tast_meta'])
+            meta_data = response.json()['data']['task_meta']
+            if 'id_hash256' in meta_data:
+                id_hash256 = meta_data['id_hash256']
+
             print('{} seconds passed...'.format(int(end - start)))
+            if verbose:
+                pprint(response.json()['data'])
+                
             task_status = response.json()['data']['task_status']
+
+            if task_status == 'failed':
+                print('task status is failed. for your reference, id_hash256 is {}'.format(id_hash256))
+                return 
+
             if task_status != 'finished':
-                time.sleep(1)
+                time.sleep(5)
             end = time.time()
 
-        if task_status == 'finished':
-            print('colleciton finished!')
-        else:
-            print('timeout, collection not finished!')
+        except Exception as e:
+            print(e)
+            print('Get exception when checking job status. Abort current task.')
+            break
 
-        response = requests.post(RESULT_URL, 
-                                json={'term': term, 
-                                       'token': token}
-                                )
 
-        if output_dir:
-            # create dir if not exist
-            if not os.path.exists(output_dir):
-                os.makedirs(output_dir)
+    if task_status == 'finished':
+        meta_data = response.json()['data']['task_meta']
+        id_hash256 = meta_data['id_hash256']
+        print('colleciton finished!')
+    else:
+        print('timeout. for your reference, id_hash256 is {}'.format(id_hash256))
+        return 
 
-        if output_dir is None and output_filename is None:
-            pprint(response.json())
-            print('=============printing results to the stdout=================')
-        elif output_filename is not None:
-            json.dump(response.json(), open(output_filename, 'w'), indent=4)            
-            print('=============writing results to file =================')
-        else:
-            json.dump(response.json(), open(output_dir + '/' +  str(job_id) + '_result.json', 'w'), indent=4)
-            print('=============writing results to file =================')
+    if id_hash256 is None:
+        print('cannot get result, missing id_hash256')
+        return 
 
+    if skip_result: return id_hash256
+
+    response = requests.get('{}?token={}&id_hash256={}'.format(RESULT_URL, token, id_hash256))
+
+    if verbose:
+        pprint(response.json())
+    if result_filename:
+        json.dump(response.json(), open(result_filename, 'w'), indent=4)
+    else:
+        json.dump(response.json(), open('result_{}.json'.format(id_hash256), 'w'), indent=4)
+    
 
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description='search parameters.')
-    parser.add_argument('--keyword', type=str, default=None, help='keyword to search, can be a string or a list of string')
+    parser.add_argument('--query', type=str, default=None, help='search string')
     parser.add_argument('--token', type=str, required=True, help='API token')
-    parser.add_argument('--timeout', type=int, default=180)
-    parser.add_argument('--output_dir', type=str, default=None,
-                       help='directory to save result file')
-    parser.add_argument('--output_filename', type=str, default=None,
-                       help='absolute filename of result file')                           
-    parser.add_argument('--input_filename', type=str, default=None,
-                       help='if you have multiple keywords to search, we will read them from a text file, where each line is a keyword')                                   
-    parser.add_argument('--is_async', action='store_true', default=False,
-                       help='whether to collect in an async way (a separate process)')
+    parser.add_argument('--skip_result', action='store_true', default=False, required=False, help='if exists, skip collecting results')
+    parser.add_argument('--timeout', type=int, default=240)
+    parser.add_argument('--result_filename', type=str, default=None,
+                       help='filename to store result json file (absolute path)')
 
     args = parser.parse_args()
-    if args.keyword is None and args.input_filename is None:
-        print('must specify a keyword (--keyword XYZ) or a filename (--input_filename XYZ.txt)')        
+    if args.query is None:
+        print('must specify a query (--query "XYZ")')
         exit(0)
 
-    trace(keyword=args.keyword,
-        keyword_list=args.keyword_list,
-        output_dir=args.output_dir, 
-        output_filename=args.output_filename, 
-        input_filename=args.input_filename,
+    trace(query=args.query,
         token=args.token,
         timeout=args.timeout,
-        is_async=args.is_async)
+        skip_result=args.skip_result,
+        result_filename=args.result_filename)
 
 
 

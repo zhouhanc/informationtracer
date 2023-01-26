@@ -28,25 +28,17 @@ pip install informationtracer
 ### usage
 ```python
 from informationtracer import informationtracer
-informationtracer.trace(keyword='exposefauci.com', token=YOUR_TOKEN, output_dir='output_test')
+id_hash256 = informationtracer.trace(query='exposefauci.com', token=YOUR_TOKEN)
 
 ```
 
 Parameters
-
-- `keyword`: can be a string (`"BLM"`) or a list of strings (`["BLM", "GunControl", "exposefauci.com"]`)
-- `output_dir`: directory under which data will be saved. For each job, a json file name with name `job_id.json` will be created. For example: `/User/test/`
-- `output_filename`: the exact path which the data will be saved. For example: `/User/test/result.json` (if you specify `output_filename`, it will overwrite `output_dir`)
+- `query`: a string of one or multiple words (`["GunControl", "free crypto"]`)
 
 
 ### result
-```
-import json
-result = json.load(open('LOCAL_JSON_FILE', 'r'))
-```
 
-
-The payload looks something like this
+The result is automatically saved in file
 ```
 {
     "behaviors": ["multiple_platform_spread"],
@@ -122,11 +114,11 @@ The payload looks something like this
 
 
 ### media coverage
-[Information Tracer, a proactive framework to fight COVID-19 infodemic](https://nyudatascience.medium.com/cds-guest-editorial-information-tracer-a-proactive-framework-to-fight-covid-19-infodemic-3f9766936f94)
-[NYC Media Lab Announces Inaugural Cohort of AI & Local News Challenge](https://www.nycmedialab.org/ai-local-news-blog-update/nyc-media-lab-announces-inaugural-cohort-of-ai-amp-local-news-challenge) 
+- [Information Tracer, a proactive framework to fight COVID-19 infodemic](https://nyudatascience.medium.com/cds-guest-editorial-information-tracer-a-proactive-framework-to-fight-covid-19-infodemic-3f9766936f94)
+- [NYC Media Lab Announces Inaugural Cohort of AI & Local News Challenge](https://www.nycmedialab.org/ai-local-news-blog-update/nyc-media-lab-announces-inaugural-cohort-of-ai-amp-local-news-challenge) 
 
 
-Author: Zhouhan Chen
-Contact: zhouhan.chen@nyu.edu
+### Contact
+Zhouhan Chen zhouhan.chen@nyu.edu
 
 
