@@ -2,20 +2,16 @@ Information Tracer API Python library
 ----------------------------
 
 ### Who we are
-- Information Tracer provides fine-grained intelligence about how information (URL, keyword, hashtag) spreads online to journalists, researchers and technology companies. We implement a set of algorithms to quantify the spread patterns and highlight suspicious behaviors. 
-- We currently cover 5 platforms -- Twitter, Facebook, Reddit, Youtube and Gab.
+- Information Tracer provides cross-platform social media intelligence about how information (URL, keyword, hashtag) spreads online. We implement an ensemble of metrics to indicate suspicious spread patterns. 
+- We currently cover 5 platforms -- Twitter, Facebook, Reddit, Youtube and Instagran.
 - Below is a diagram of our system design. To learn more please check [our paper](http://ceur-ws.org/Vol-2890/paper3.pdf) 
 
 ![Information Tracer architecture](./img/information-tracer-pipeline.png)
 
-
 __Due to API limit, each trace call will take 1-3 minutes depending on data volume.__
 
-
-
-
-### pre-requisite 
-- python 2 or 3
+### Pre-requisite 
+- python 3
 - you must already have a token
 
 ### installation
@@ -28,17 +24,25 @@ pip install informationtracer
 ### usage
 ```python
 from informationtracer import informationtracer
-id_hash256 = informationtracer.trace(query='exposefauci.com', token=YOUR_TOKEN)
+id_hash256 = informationtracer.trace(query='free crypto', token=YOUR_TOKEN)
 
 ```
 
 Parameters
-- `query`: a string of one or multiple words (`["GunControl", "free crypto"]`)
+- `query`: a string of one or multiple words. For example: `"GunControl", "free crypto", "EritreaOutOfTigray"
+- `token`: contact us to get your token
+
+Return Value (__please save and keep a record for future use__)
+- `id_hash256`: a unique identifier for each query.  How to use `id_hash256`?
+  - Visualize results by visiting https://informationtracer.com/?result={id_hash256}  (need to log in first)
+  - Get results from result API endpoint https://informationtracer.com/api/v1/result?token={token}&id_hash256={id_hash256}
 
 
-### result
+### result 
+- The result is automatically saved in a local json file `result_{id_hash256}.json`. If you set `--skip_result`, no result will be saved
+- If you set `--result_filename /User/abc/Downloads/result.json`, result will be saved at your designated location
 
-The result is automatically saved in file
+result format
 ```
 {
     "behaviors": ["multiple_platform_spread"],
@@ -64,6 +68,7 @@ The result is automatically saved in file
             },
         ],
         "original_tweet": [],
+        "original_tweet_detail": [],
         "reddit": [],
         "reply": [
             {
@@ -84,7 +89,7 @@ The result is automatically saved in file
         "telegram": [],
         "youtube": []
     },
-    "term": "Dimejibankole",
+    "id_hash256": "a21c353de8b231a458b88db0ee8f483ccd2b38482d82f3556b443b2071cec819",
     "topics": [
         "election",
         "politics"
@@ -93,32 +98,21 @@ The result is automatically saved in file
 ```
 
 
-### Behaviors we currently track
-- What is a behavior? A behavior is a suspicious information spread pattern based on an abnormal metric value, which is calculated from raw data. 
-- How do we define abnormal? Assuming the metric we calculate is `the average tweet per user sharing a URL`.We have already calculated its value for tens of thousands of URLs. If a new URL's metric is above 95 percentile of the sample distrubution, we will add a behavior label to that URL.
-
-| Behavior | Description |
-| --- | --- |
-| multiple_platform_spread | URL/Keyword is shared on 3 or more platforms, each platform having at least 100 impressions |
-| twitter_amplification | average tweet per user is more than 2, or percent of tweets from top 10 percent users is more than 30 |
-| youtube_amplification | total number of youtube videos is more than 10 |
-
-
 ### Web interace 
 - To help people visualize the information, we provide a web interface available at [https://informationtracer.com](https://informationtracer.com). 
-
-- To visualize a term you searched recently, you can visit `https://informationtracer.com/?url=REPLACE_WITH_YOUR_TERM`. 
+- To visualize a query you searched recently, you can visit `https://informationtracer.com/?result={id_hash256}`. 
 
 ![Screenshot of Information Tracer Wen Interface](./img/information-tracer-web-interface-screenshot.png)
 
 
 
-### media coverage
+### Media coverage
 - [Information Tracer, a proactive framework to fight COVID-19 infodemic](https://nyudatascience.medium.com/cds-guest-editorial-information-tracer-a-proactive-framework-to-fight-covid-19-infodemic-3f9766936f94)
 - [NYC Media Lab Announces Inaugural Cohort of AI & Local News Challenge](https://www.nycmedialab.org/ai-local-news-blog-update/nyc-media-lab-announces-inaugural-cohort-of-ai-amp-local-news-challenge) 
 
 
-### Contact
-Zhouhan Chen zhouhan.chen@nyu.edu
+### Contact / Bug Report
+For bug report or any inquiry, please contact Zhouhan Chen zhouhan.chen@nyu.edu
+
 
 
