@@ -3,12 +3,12 @@ Information Tracer API Python library
 
 ### Who we are
 - [Information Tracer](https://informationtracer.com) provides cross-platform social media intelligence about how information (URL, keyword, hashtag) spreads online. We implement an ensemble of metrics to indicate suspicious spread patterns. 
-- We currently cover 5 platforms -- Twitter, Facebook, Reddit, Youtube and Instagran.
+- We currently cover 5 platforms -- Twitter, Facebook, Reddit, Youtube and Instagram.
 - Below is a diagram of our system design. To learn more please check [our paper](http://ceur-ws.org/Vol-2890/paper3.pdf) 
 
 ![Information Tracer architecture](./img/information-tracer-pipeline.png)
 
-__Due to API limit, each trace call will take 1-3 minutes depending on data volume.__
+__Due to API limit, each trace call will take 10-30 seconds depending on data volume.__
 
 ### Pre-requisite 
 - python 3
@@ -21,31 +21,48 @@ pip install informationtracer
 ```
 
 
-### usage
+### usage (trace and save results)
 ```python
 from informationtracer import informationtracer
 id_hash256 = informationtracer.trace(query='free crypto', token=YOUR_TOKEN)
-
 ```
 
 Parameters
-- `query`: a string of one or multiple words. For example: `"GunControl", "free crypto", "EritreaOutOfTigray"
+- `query`: a string of one or multiple words. For example: "GunControl", "free crypto", "EritreaOutOfTigray"
 - `token`: contact us to get your token
+- The result is automatically saved in a local json file `result_{id_hash256}.json`. If you set `--skip_result`, no result will be saved
+- If you set `--result_filename /User/abc/Downloads/result.json`, result will be saved at your designated location
 
 Return Value (__please save and keep a record for future use__)
 - `id_hash256`: a unique identifier for each query.  How to use `id_hash256`?
   - Visualize results by visiting https://informationtracer.com/?result={id_hash256}  (need to log in first)
-  - Get results from result API endpoint https://informationtracer.com/api/v1/result?token={token}&id_hash256={id_hash256}
+  - Get results directly from result API (see below)
 
+### usage (no trace, just get results)
+```python
+import requests
+url = "https://informationtracer.com/api/v1/result?token={}&id_hash256={}".format(YOUR_TOKEN, id_hash256)
+results = requests.get("url").json()
+```
 
-### result 
-- The result is automatically saved in a local json file `result_{id_hash256}.json`. If you set `--skip_result`, no result will be saved
-- If you set `--result_filename /User/abc/Downloads/result.json`, result will be saved at your designated location
+### format of result 
+by default, result is a json with multiple fields
 
-result format
+- `query`: the search query 
+- `id_hash256`: unique ID for this query
+- `posts`: social media posts on each platform. Each post has four parameters:
+ - `d`: (description, basically the text)
+ - `i`: (number of interaction)
+ - `n`: (name of the account/group/channel)
+ - `t`: (time of the post)
+- `metrics`: summary of the information spread  
+- `indicators`: suspicious behaviors we track
+- `co_occurrence`: list of urls and hashtags that appear together with the query
+- `created_at`: query collection time
+
 ```
 {
-    "behaviors": ["multiple_platform_spread"],
+    "query": "Sample query"
     "metrics": {
         "avg_tweet_per_user": 1.2072072072072073,
         "breakout_scale": 3,
@@ -78,7 +95,47 @@ result format
         ],        
         "youtube": []
     },
+    "co_occurrence": [
+        {
+          "count": 54,
+          "name": "POPULAR_URL",
+          "platform": "facebook",
+          "type": "url"
+        },
+        {
+          "count": 44,
+          "name": "SAMPLE_HASHTAG",
+          "platform": "twitter",
+          "type": "hashtag"
+        },
+        {
+          "count": 36,
+          "name": "SAMPLE_HASHTAG_2",
+          "platform": "facebook",
+          "type": "hashtag"
+        }
+    ],
+    "indicator": {
+        "contains_sensitive_topic": {
+          "context": null,
+          "verdict": false
+        },
+        "coordinated_across_platforms": {
+          "context": null,
+          "verdict": false
+        },
+        "has_twitter_bot_activity": {
+          "context": null,
+          "verdict": false
+        },
+        "overall_information_quality": 100,
+        "shared_by_suspicious_account": {
+          "context": null,
+          "verdict": false
+        },
+      },    
     "id_hash256": "a21c353de8b231a458b88db0ee8f483ccd2b38482d82f3556b443b2071cec819",
+    "created_at": "Mon, 23 Jan 2023 12:26:55 GMT",
 }
 ```
 
