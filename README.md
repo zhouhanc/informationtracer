@@ -2,7 +2,8 @@ Information Tracer API Python library
 ----------------------------
 
 ### Who we are
-- [Information Tracer](https://informationtracer.com) provides cross-platform social media intelligence about how information (URL, keyword, hashtag) spreads online. We implement an ensemble of metrics to indicate suspicious spread patterns. 
+- [Information Tracer](https://informationtracer.com) provides cross-platform social media intelligence about how information (URL, keyword, hashtag) spreads online. 
+- Some features: search any keyword during any time period; get top posts per platform; visualize sharing network; access indicators of suspicious behaviors. 
 - We currently cover 5 platforms -- Twitter, Facebook, Reddit, Youtube and Instagram.
 - Below is a diagram of our system design. To learn more please check [our paper](http://ceur-ws.org/Vol-2890/paper3.pdf) 
 
