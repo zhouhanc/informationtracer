@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='informationtracer',
-    version='0.1.6',    
+    version='0.1.7',    
     description='Client-side API to access Information Tracer',
     url='https://github.com/zhouhanc/informationtracer',
     author='Zhouhan Chen',

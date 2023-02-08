@@ -33,6 +33,7 @@ Parameters
 - `token`: contact us to get your token
 - `start_date`: all posts are published after this date, format YYYY-MM-DD, default 7 days before current date
 - `end_date`: all posts are published before this date, format YYYY-MM-DD, default current date
+- `dataset`: name / label for this query. Default is "API_submit"
 - The result is automatically saved in a local json file `result_{id_hash256}.json`. If you set `--skip_result`, no result will be saved
 - If you set `--result_filename /User/abc/Downloads/result.json`, result will be saved at your designated location
 

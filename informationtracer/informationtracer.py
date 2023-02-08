@@ -10,7 +10,8 @@ RESULT_URL = 'https://informationtracer.com/api/v1/result'
 JOB_STATUS_URL = 'https://informationtracer.com/job_status'
 
 def trace(query=None, skip_result=False, result_filename=None, 
-    timeout=240, verbose=True, token=None, start_date=None, end_date=None):
+    timeout=240, verbose=True, dataset='API_submit', 
+    token=None, start_date=None, end_date=None):
     """
         Submit a query, wait for the job to finish, and collect the results
         
@@ -35,7 +36,8 @@ def trace(query=None, skip_result=False, result_filename=None,
                              json={'query': query, 
                                    'token': token,
                                    'start_date': start_date,
-                                   'end_date': end_date
+                                   'end_date': end_date,
+                                   'dataset': dataset
                                    }                                   
                                    )
     
