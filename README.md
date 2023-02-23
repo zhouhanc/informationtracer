@@ -9,7 +9,7 @@ Information Tracer API Python library
 
 ![Information Tracer architecture](./img/information-tracer-pipeline.png)
 
-__Due to API limit, each trace call will take 10-30 seconds depending on data volume.__
+__Due to API limit, each trace call will take 30-60 seconds depending on data volume.__
 
 ### Pre-requisite 
 - python 3
@@ -29,18 +29,18 @@ id_hash256 = informationtracer.trace(query='free crypto', token=YOUR_TOKEN)
 ```
 
 Parameters
-- `query`: a string of one or multiple words. For example: "GunControl", "free crypto", "EritreaOutOfTigray"
-- `token`: contact us to get your token
+- `query`: [REQUIRED] a string of one or multiple words. For example: "GunControl", "free crypto". We support boolean operators like AND, OR, NOT. See [How to build a complex query](#how-to-build-a-complex-query) to learn more.
+- `token`: [REQUIRED] contact us to get your token
 - `start_date`: all posts are published after this date, format YYYY-MM-DD, default 7 days before current date
 - `end_date`: all posts are published before this date, format YYYY-MM-DD, default current date
-- `dataset`: name / label for this query. Default is "API_submit"
-- The result is automatically saved in a local json file `result_{id_hash256}.json`. If you set `--skip_result`, no result will be saved
-- If you set `--result_filename /User/abc/Downloads/result.json`, result will be saved at your designated location
+- `label`: label for this query. Default is "API_submit"
+- `skip_result`: By default, the result is automatically saved to a local json file `result_{id_hash256}.json`. If you add `skip_result=True`, no json will be saved
+- `result_filename`: Default is None. If you add `result_filename="/User/abc/Downloads/result.json"`, result will be saved at your designated location.
 
 Return Value (__please save and keep a record for future use__)
 - `id_hash256`: a unique identifier for each query.  How to use `id_hash256`?
   - Visualize results by visiting https://informationtracer.com/?result={id_hash256}  (need to log in first)
-  - Get results directly from result API (see below)
+  - Retrieve results later from result API (see below)
 
 ### Result API (get results. must have sent the query before)
 ```python
@@ -49,7 +49,19 @@ url = "https://informationtracer.com/api/v1/result?token={}&id_hash256={}".forma
 results = requests.get("url").json()
 ```
 
-#### format of result 
+### How to build a complex query
+#### Important rules
+- `AND`, `OR`, `NOT` must be all-cap. Otherwise they are treated as normal English words
+- Use parenthesis to group multiple words with AND. For example, `(Word1 AND Word2)`
+- Query limit is 512 characters. Sending a query above the limit might get empty results.
+
+Example: `(Ukraine AND NATO) OR (Ukraine AND EU)`
+Meaning: Any posts that contain "Ukraine" and "NATO" or "Ukraine" and "EU".
+
+Example: `(Ukraine AND NATO) NOT Biden NOT Putin`
+Meaning: Any posts that contain "Ukraine" and "NATO", without word "Biden" or "Putin".
+
+### Format of result 
 by default, result is a json with multiple fields
 
 - `query`: the search query 
@@ -143,7 +155,7 @@ by default, result is a json with multiple fields
 }
 ```
 
-### Load Source API (get source)
+### Load Source API (get detailed posts from individual platform)
 ```python
 import requests
 url = "https://informationtracer.com/loadsource?source={}&id_hash256={}&token={}".format(SOURCE, id_hash256, YOUR_TOKEN)
