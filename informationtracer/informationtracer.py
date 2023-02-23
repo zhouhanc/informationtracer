@@ -37,7 +37,7 @@ def trace(query=None, skip_result=False, result_filename=None,
                                    'token': token,
                                    'start_date': start_date,
                                    'end_date': end_date,
-                                   'dataset': dataset
+                                   'dataset': dataset,
                                    }                                   
                                    )
     
@@ -104,6 +104,7 @@ def trace(query=None, skip_result=False, result_filename=None,
         json.dump(response.json(), open(result_filename, 'w'), indent=4)
     else:
         json.dump(response.json(), open('result_{}.json'.format(id_hash256), 'w'), indent=4)
+    return id_hash256
     
 
 if __name__ == '__main__':

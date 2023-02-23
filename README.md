@@ -22,7 +22,7 @@ pip install informationtracer
 ```
 
 
-### usage (trace and save results)
+### Trace API (send query and get results)
 ```python
 from informationtracer import informationtracer
 id_hash256 = informationtracer.trace(query='free crypto', token=YOUR_TOKEN)
@@ -42,14 +42,14 @@ Return Value (__please save and keep a record for future use__)
   - Visualize results by visiting https://informationtracer.com/?result={id_hash256}  (need to log in first)
   - Get results directly from result API (see below)
 
-### usage (no trace, just get results)
+### Result API (get results. must have sent the query before)
 ```python
 import requests
 url = "https://informationtracer.com/api/v1/result?token={}&id_hash256={}".format(YOUR_TOKEN, id_hash256)
 results = requests.get("url").json()
 ```
 
-### format of result 
+#### format of result 
 by default, result is a json with multiple fields
 
 - `query`: the search query 
@@ -142,6 +142,16 @@ by default, result is a json with multiple fields
     "created_at": "Mon, 23 Jan 2023 12:26:55 GMT",
 }
 ```
+
+### Load Source API (get source)
+```python
+import requests
+url = "https://informationtracer.com/loadsource?source={}&id_hash256={}&token={}".format(SOURCE, id_hash256, YOUR_TOKEN)
+results = requests.get("url").json()
+```
+
+
+
 
 
 ### Web interace 
