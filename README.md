@@ -188,6 +188,10 @@ by default, result is a json with multiple fields
         'twitter': 'Mixed',
         'youtube': 'Mixed'
      },
+    "breakout_moment": [
+        {'height': 10.453914959499867,
+         'summary': 'The key event from the tweets is that...'
+    }],
     "id_hash256": "a21c353de8b231a458b88db0ee8f483ccd2b38482d82f3556b443b2071cec819",
     "created_at": "Mon, 23 Jan 2023 12:26:55 GMT",
 }
