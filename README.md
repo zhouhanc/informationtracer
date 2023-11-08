@@ -11,15 +11,15 @@ Information Tracer API Python library
 
 
 ### Pre-requisite 
-- python 3
-- you must already have a token, contact us to get a token
+- Python 3
+- You must already have a token. If not, contact us to get a token.
 
 
 ### Overview our three main API endpoins
 1. Use Submit API to submit a query, and get a unique identifier called `id_hash256`
 2. Use Status API to check status of a running query, based on `id_hash256`
 3. Use Result API to get full result of a query, based on `id_hash256`
-4. For an end-to-end functional code, please see `example.py`
+4. For an end-to-end example, please see [example.py](https://github.com/zhouhanc/informationtracer/blob/main/example.py)
 
 ### Submit API
 Input: `query`, `token`, `start_date`, `end_date`
@@ -73,7 +73,7 @@ When `include_partial_results` is set to '0', or there is no partial result.
 
 When `include_partial_results` is set to '1', and there is partial result (by default, the system returns the top 5 tweets by retweet). 
 
-`tweet_preview` is a list of json. Please check the Result API for a full explanation of each json key (`d`, `i`, `l`, ...).
+`tweet_preview` is a list of dictionaries. Please check the Result API for a full explanation of each json key (`d`, `i`, `l`, ...).
 ```
 {'status': 'started', 
  'status_percentage': '10', 
@@ -107,12 +107,12 @@ results = requests.get("url").json()
 ```
 
 #### Format of output 
-The returned data is in json format, with the following fields
+The returned data is in json format, with following keys
 
 - `query`: the search query 
 - `created_at`: time the search query is submitted
 - `id_hash256`: unique ID (identifier) for this query
-- `posts`: social media posts on each platform. Each post has four parameters:
+- `posts`: social media posts on each platform. Each post has following keys:
   - `d`: description, basically the text
   - `i`: number of interaction
   - `n`: name of the account/group/channel
@@ -252,6 +252,7 @@ The returned data is in json format, with the following fields
 ```
 
 ### Additional API -- Load Source (get detailed posts from a particular platform)
+For detailed specification of this API, please contact us.
 ```python
 import requests
 url = "https://informationtracer.com/loadsource?source={}&id_hash256={}&token={}".format(SOURCE, id_hash256, YOUR_TOKEN)

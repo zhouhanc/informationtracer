@@ -101,8 +101,6 @@ if __name__ == '__main__':
 
     id_hash256 = step_1_submit(query, token, start_date, end_date)
     if id_hash256:
-    # id_hash256 = '9d1f1dfecf04458f5ffce2178e19eda2aa4d2e19f145e3b45a2742eaaf5f4b4b'
-    # if 1:
         print(id_hash256)
         status = step_2_check_status(id_hash256, token)
         print(status)
