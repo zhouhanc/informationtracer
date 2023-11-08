@@ -9,75 +9,126 @@ Information Tracer API Python library
 
 ![Information Tracer architecture](./img/information-tracer-pipeline.png)
 
-__Due to API limit, each trace call will take 30-60 seconds depending on data volume.__
 
 ### Pre-requisite 
 - python 3
-- you must already have a token
-
-### installation
-
-```bash
-pip install informationtracer
-```
+- you must already have a token, contact us to get a token
 
 
-### Trace API (send query and get results)
-```python
-from informationtracer import informationtracer
-id_hash256 = informationtracer.trace(query='free crypto', token=YOUR_TOKEN)
-```
+### Overview our three main API endpoins
+1. Use Submit API to submit a query, and get a unique identifier called `id_hash256`
+2. Use Status API to check status of a running query, based on `id_hash256`
+3. Use Result API to get full result of a query, based on `id_hash256`
+4. For an end-to-end functional code, please see `example.py`
 
-Parameters
-- `query`: [REQUIRED] a string of one or multiple words. For example: "GunControl", "free crypto". We support boolean operators like AND, OR, NOT. See [How to build a complex query](#how-to-build-a-complex-query) to learn more.
-- `token`: [REQUIRED] contact us to get your token
-- `start_date`: all posts are published after this date, format YYYY-MM-DD, default 7 days before current date
-- `end_date`: all posts are published before this date, format YYYY-MM-DD, default current date
-- `label`: label for this query. Default is "API_submit"
-- `skip_result`: By default, the result is automatically saved to a local json file `result_{id_hash256}.json`. If you add `skip_result=True`, no json will be saved
-- `result_filename`: Default is None. If you add `result_filename="/User/abc/Downloads/result.json"`, result will be saved at your designated location.
+### Submit API
+Input: `query`, `token`, `start_date`, `end_date`
+Output: `id_hash256` (a unique string identifier for this search)
 
-Return Value (__please save and keep a record for future use__)
-- `id_hash256`: a unique identifier for each query.  How to use `id_hash256`?
-  - Visualize results by visiting https://informationtracer.com/?result={id_hash256}  (need to log in first)
-  - Retrieve results later from result API (see below)
-
-### Result API (get results. must have sent the query before)
+Example:
 ```python
 import requests
-url = "https://informationtracer.com/api/v1/result?token={}&id_hash256={}".format(YOUR_TOKEN, id_hash256)
+SUBMIT_URL = 'https://informationtracer.com/submit'
+
+query = 'nvidia AND scam'
+token = 'YOUR_TOKEN'
+start_date = '2023-11-03'
+end_date = '2023-11-08'
+
+response = requests.post(SUBMIT_URL, 
+                             timeout=10,
+                             json={'query': query, 
+                                   'token': token,
+                                   'start_date': start_date,
+                                   'end_date': end_date,
+                                   }                                   
+                            )
+if 'id_hash256' in response.json():
+    id_hash256 = response.json()['id_hash256']
+```
+
+
+### Status API (get status of a running query and partial result (top 5 tweets). must have id_hash256)
+Input: `id_hash256`, `token`, `include_partial_results` (either '0' and '1')
+Output: json (detail below)
+
+Example:
+```python
+import requests
+STATUS_URL = 'https://informationtracer.com/status'
+
+url = "{}?token={}&id_hash256={}&include_partial_results={}".format(STATUS_URL, token, id_hash256, 0)
 results = requests.get("url").json()
 ```
 
-### How to build a complex query
-#### Important rules
-- `AND`, `OR`, `NOT` must be all-cap. Otherwise they are treated as normal English words
-- Use parenthesis to group multiple words with AND. For example, `(Word1 AND Word2)`
-- Query limit is 512 characters. Sending a query above the limit might get empty results.
+#### Format of output
+When `include_partial_results` is set to '0', or there is no partial result.
+```
+{'status': 'started', 
+ 'status_percentage': '10', 
+ 'status_text': 'Collecting cross-platform posts...', 
+ 'tweet_preview': None
+}
+```
 
-Example: `(Ukraine AND NATO) OR (Ukraine AND EU)`
-Meaning: Any posts that contain "Ukraine" and "NATO" or "Ukraine" and "EU".
+When `include_partial_results` is set to '1', and there is partial result (by default, the system returns the top 5 tweets by retweet). 
 
-Example: `(Ukraine AND NATO) NOT Putin`
-Meaning: Any posts that contain "Ukraine" and "NATO", without word "Putin".
+`tweet_preview` is a list of json. Please check the Result API for a full explanation of each json key (`d`, `i`, `l`, ...).
+```
+{'status': 'started', 
+ 'status_percentage': '10', 
+ 'status_text': 'Collecting cross-platform posts...', 
+ 'tweet_preview': [{'d': '@Apple Unless you buy a MacBook circa 2010',
+                    'i': 0, 
+                    'l': 'https://twitter.com/heathdollars/status/1721998289388896312', 'n': 'heathdollars', 
+                    'p': 'https://pbs.twimg.com/profile_images/1641987731181142018/tECQ8Xy1_normal.jpg', 
+                    't': '2023-11-07T21:09:20', 
+                    'u_d': 'join your union\n\nhttps://t.co/4sxV02E2aI', 
+                    'u_id': '1000720137106866176', 
+                    'u_t': '2018-05-27T12:47:27'
+                    }, 
+                    {...}, 
+                    {...}, 
+                    ...
+                   ]
+}
+```
 
-### Format of result 
-by default, result is a json with multiple fields
+
+### Result API (get full results. must have id_hash256)
+Input: `id_hash256`, `token`
+Output: json (detail below)
+```python
+import requests
+RESULT_URL = 'https://informationtracer.com/result'
+
+url = "{}?token={}&id_hash256={}".format(RESULT_URL, token, id_hash256)
+results = requests.get("url").json()
+```
+
+#### Format of output 
+The returned data is in json format, with the following fields
 
 - `query`: the search query 
 - `created_at`: time the search query is submitted
 - `id_hash256`: unique ID (identifier) for this query
 - `posts`: social media posts on each platform. Each post has four parameters:
-  - `d`: (description, basically the text)
-  - `i`: (number of interaction)
-  - `n`: (name of the account/group/channel)
-  - `t`: (time of the post)
+  - `d`: description, basically the text
+  - `i`: number of interaction
+  - `n`: name of the account/group/channel
+  - `t`: time of the post (timezone is UTC, example format: "2021-01-16T07:16:31")
+  - `p`: profile (a URL that points to an image); for youtube, its the video thumbnail
+  - `u_id`: Twitter user id (ONLY AVAILABLE for TWITTER)
+  - `u_d`: Twitter user description (ONLY AVAILABLE for TWITTER)
+  - `u_t`: Twitter user account creation time (ONLY AVAILABLE for TWITTER)
+
 - `metric`: summary statistics, such as average post per twitter user
 - `indicator_of_coordination`: indicators of coordinated behavior, derived from different metrics, posts and spread patterns
 - `summary`: summary of major posts on each platform, generated by ChatGPT
 - `sentiment`: overall sentiment (Positive, Negative, Mixed, N/A) on each platform, generated by ChatGPT
 - `interaction`: total engagement on each platform
 - `co_occurrence`: list of urls and hashtags that appear together with the query
+- `breakout_moment`: list of events during which the Twitter engagement broke out
 
 ```
 {
@@ -115,13 +166,15 @@ by default, result is a json with multiple fields
                 "d": "None",
                 "i": 99,
                 "n": "Objectv Media",
-                "t": "2021-01-16T07:16:31"
+                "t": "2021-01-16T07:16:31",
+                "p": "https://...."
             },
             {
                 "d": "None",
                 "i": 33,
                 "n": "Who to Vote Nigeria",
-                "t": "2021-03-12T21:05:02"
+                "t": "2021-03-12T21:05:02",
+                "p": "https://...."
             },
         ],
         "reddit": [],
@@ -130,7 +183,8 @@ by default, result is a json with multiple fields
                 "d": "@haidaer__ \ud83e\udd14",
                 "i": 0,
                 "n": "ebikhay",
-                "t": "2022-05-14T08:48:16"
+                "t": "2022-05-14T08:48:16",
+                "p": "https://...."
             },
         ],        
         "youtube": []
@@ -197,32 +251,38 @@ by default, result is a json with multiple fields
 }
 ```
 
-### Load Source API (get detailed posts from individual platform)
+### Additional API -- Load Source (get detailed posts from a particular platform)
 ```python
 import requests
 url = "https://informationtracer.com/loadsource?source={}&id_hash256={}&token={}".format(SOURCE, id_hash256, YOUR_TOKEN)
-results = requests.get("url").json()
+results = requests.get(url).json()
 ```
-
-
-
-
 
 ### Web interace 
 - To help people visualize the information, we provide a web interface available at [https://informationtracer.com](https://informationtracer.com). 
 - To visualize a query you searched recently, you can visit `https://informationtracer.com/?result={id_hash256}`. 
-
+- Log in is required. Please contact us and we will help you register an account
 ![Screenshot of Information Tracer Wen Interface](./img/information-tracer-web-interface-screenshot.png)
 
+
+### Tips on how to build advanced search query
+#### Important rules
+- `AND`, `OR`, `NOT` must be all-cap. Otherwise they are treated as normal English words
+- Use parenthesis to group multiple words with AND. For example, `(Word1 AND Word2)`
+- Query limit is 512 characters. Sending a query above the limit might get empty results.
+
+Example: `(Ukraine AND NATO) OR (Ukraine AND EU)`
+Meaning: Any posts that contain "Ukraine" and "NATO" or "Ukraine" and "EU".
+
+Example: `(Ukraine AND NATO) NOT Putin`
+Meaning: Any posts that contain "Ukraine" and "NATO", without word "Putin".
+
+### Contact / Bug Report
+For bug report or any inquiry, please contact Zhouhan Chen zhouhan@safelink.network
 
 
 ### Media coverage
 - [Information Tracer, a proactive framework to fight COVID-19 infodemic](https://nyudatascience.medium.com/cds-guest-editorial-information-tracer-a-proactive-framework-to-fight-covid-19-infodemic-3f9766936f94)
 - [NYC Media Lab Announces Inaugural Cohort of AI & Local News Challenge](https://www.nycmedialab.org/ai-local-news-blog-update/nyc-media-lab-announces-inaugural-cohort-of-ai-amp-local-news-challenge) 
-
-
-### Contact / Bug Report
-For bug report or any inquiry, please contact Zhouhan Chen zhouhan.chen@nyu.edu
-
 
 
