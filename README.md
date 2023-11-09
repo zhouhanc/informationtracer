@@ -116,6 +116,7 @@ The returned data is in json format, with following keys
   - `d`: description, basically the text
   - `i`: number of interaction
   - `n`: name of the account/group/channel
+  - `l`: link to the original post
   - `t`: time of the post (timezone is UTC, example format: "2021-01-16T07:16:31")
   - `p`: profile (a URL that points to an image); for youtube, its the video thumbnail
   - `u_id`: Twitter user id (ONLY AVAILABLE for TWITTER)
