@@ -19,7 +19,7 @@ Information Tracer API Python library
 1. Use Submit API to submit a query, and get a unique identifier called `id_hash256`
 2. Use Status API to check status of a running query, based on `id_hash256`
 3. Use Result API to get full result of a query, based on `id_hash256`
-4. For an end-to-end example, please see [example.py](https://github.com/zhouhanc/informationtracer/blob/main/example.py)
+4. **For an end-to-end example, please see [example.py](https://github.com/zhouhanc/informationtracer/blob/main/example.py)**
 
 ### Submit API
 Input: `query`, `token`, `start_date`, `end_date`
@@ -58,7 +58,7 @@ import requests
 STATUS_URL = 'https://informationtracer.com/status'
 
 url = "{}?token={}&id_hash256={}&include_partial_results={}".format(STATUS_URL, token, id_hash256, 0)
-results = requests.get("url").json()
+results = requests.get(url).json()
 ```
 
 #### Format of output
@@ -103,7 +103,7 @@ import requests
 RESULT_URL = 'https://informationtracer.com/result'
 
 url = "{}?token={}&id_hash256={}".format(RESULT_URL, token, id_hash256)
-results = requests.get("url").json()
+results = requests.get(url).json()
 ```
 
 #### Format of output 
@@ -264,7 +264,8 @@ results = requests.get(url).json()
 - To help people visualize the information, we provide a web interface available at [https://informationtracer.com](https://informationtracer.com). 
 - To visualize a query you searched recently, you can visit `https://informationtracer.com/?result={id_hash256}`. 
 - Log in is required. Please contact us and we will help you register an account
-![Screenshot of Information Tracer Wen Interface](./img/information-tracer-web-interface-screenshot.png)
+
+<!-- ![Screenshot of Information Tracer Wen Interface](./img/information-tracer-web-interface-screenshot.png) -->
 
 
 ### Tips on how to build advanced search query
@@ -283,8 +284,9 @@ Meaning: Any posts that contain "Ukraine" and "NATO", without word "Putin".
 For bug report or any inquiry, please contact Zhouhan Chen zhouhan@safelink.network
 
 
-### Media coverage
+<!-- ### Media coverage
 - [Information Tracer, a proactive framework to fight COVID-19 infodemic](https://nyudatascience.medium.com/cds-guest-editorial-information-tracer-a-proactive-framework-to-fight-covid-19-infodemic-3f9766936f94)
 - [NYC Media Lab Announces Inaugural Cohort of AI & Local News Challenge](https://www.nycmedialab.org/ai-local-news-blog-update/nyc-media-lab-announces-inaugural-cohort-of-ai-amp-local-news-challenge) 
 
 
+ -->
