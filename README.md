@@ -23,6 +23,9 @@ Information Tracer API Python library
 
 ### Submit API
 Input: `query`, `token`, `start_date`, `end_date`
+
+Optional input: `twitter_only` (if you add `twitter_only` as json key, '1' as value, the API will **only** collect twitter data, no other platform, no LLM-based analysis.)
+
 Output: `id_hash256` (a unique string identifier for this search)
 
 Example:
