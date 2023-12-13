@@ -255,18 +255,13 @@ The returned data is in json format, with following keys
 }
 ```
 
-### Additional API -- Load Source (get detailed posts from a particular platform)
+<!-- ### Additional API -- Load Source (get detailed posts from a particular platform)
 For detailed specification of this API, please contact us.
 ```python
 import requests
 url = "https://informationtracer.com/loadsource?source={}&id_hash256={}&token={}".format(SOURCE, id_hash256, YOUR_TOKEN)
 results = requests.get(url).json()
-```
-
-### Web interace 
-- To help people visualize the information, we provide a web interface available at [https://informationtracer.com](https://informationtracer.com). 
-- To visualize a query you searched recently, you can visit `https://informationtracer.com/?result={id_hash256}`. 
-- Log in is required. Please contact us and we will help you register an account
+``` -->
 
 <!-- ![Screenshot of Information Tracer Wen Interface](./img/information-tracer-web-interface-screenshot.png) -->
 
@@ -282,6 +277,11 @@ Meaning: Any posts that contain "Ukraine" and "NATO" or "Ukraine" and "EU".
 
 Example: `(Ukraine AND NATO) NOT Putin`
 Meaning: Any posts that contain "Ukraine" and "NATO", without word "Putin".
+
+### Web Interface
+- To help people visualize the information, we provide a web interface available at [https://informationtracer.com](https://informationtracer.com). 
+- To visualize a query you searched recently, you can visit `https://informationtracer.com/?result={id_hash256}`. 
+- Log in is required. Please contact us and we will help you register an account
 
 ### Contact / Bug Report
 For bug report or any inquiry, please contact Zhouhan Chen zhouhan@safelink.network
