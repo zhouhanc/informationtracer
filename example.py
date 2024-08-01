@@ -86,23 +86,25 @@ def step_2_check_status(id_hash256, token):
     return 'timeout'
 
 
+# STEP 3: get result (well-formatted result per platform)
+def step_3_get_result_by_platform(source, id_hash256, token):    
+    try:
+        url = 'https://informationtracer.com/download?source={}&type=csv&id={}&token={}'.format(source, id_hash256, token)
+        df = pd.read_csv(url)
+        return df
+    except Exception as e:
+        print(e)
+
+    return []
+
+
+# DEPRECATED
 # STEP 3: get result (aggregated, minimized payload and extra intelligence)
 def step_3_get_result_aggregated(id_hash256, token):
     try:
         response = requests.get('{}?token={}&id_hash256={}'.format(RESULT_URL, token, id_hash256), timeout=10)
         pprint(response.json().keys())
         return response.json()
-    except Exception as e:
-        print(e)
-
-    return []
-
-# STEP 3.2: get result (well-formatted result per platform)
-def step_3_get_result_formatted(source, id_hash256, token):    
-    try:
-        url = 'https://informationtracer.com/download?source={}&type=csv&id={}&token={}'.format(source, id_hash256, token)
-        df = pd.read_csv(url)
-        return df
     except Exception as e:
         print(e)
 
@@ -121,7 +123,9 @@ if __name__ == '__main__':
         status = step_2_check_status(id_hash256, token)
         print(status)
         if status == 'finished':
-            result = step_3_get_result(id_hash256, token)
+            # get twitter posts
+            result = step_3_get_result_by_platform('twitter', id_hash256, token)
+            print(result)
             # NOTE: do something with result
             # ....
 
