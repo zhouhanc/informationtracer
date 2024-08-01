@@ -115,12 +115,11 @@ if __name__ == '__main__':
     ##############################################
     ############ TODO: CHANGE PARAMETERS #########
     query = 'nvidia AND stock'
-    token = 'mmohyu5xd7oyg970t035i4nudfuysmw7'
+    token = os.environ['informationtracer_token']
     start_date = '2023-11-03'
     end_date = '2023-11-06'
     ##############################################
     ##############################################
-
     id_hash256 = step_1_submit(query, token, start_date, end_date)
     if id_hash256:
         print('Query id_hash256 is {}'.format(id_hash256))

@@ -18,7 +18,7 @@ Information Tracer is a system to collect social media posts and generate intell
 1. Close this repository
 2. `pip install requests pandas`
 3. Update parameters in [example.py](https://github.com/zhouhanc/informationtracer/blob/main/example.py), including query, start_date, end_date, token 
-4. `python example.py`
+4. `informationtracer_token=XXX python example.py` (or add `informationtracer_token` in bash_profile)
 
 
 ### How to build a search query
