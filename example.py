@@ -127,8 +127,8 @@ if __name__ == '__main__':
             result = step_3_get_result_by_platform('twitter', id_hash256, token)
             print(result)
             # NOTE: do something with result
-            # ....
-
+            result.to_csv('tweet_result_{}.csv'.format(id_hash256))
+            print('tweet result is saved')
 
 
 

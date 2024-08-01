@@ -89,7 +89,7 @@ results = requests.get(url).json()
 ```
 
 __Format of output__
-Because each collection can take 30-60 seconds, to send partial results to users as soon as possible, we provide a field called `tweet_preview`. Thie field is initially empty. When the system has collected 10 tweets, `tweet_preview` will contain a list of dictionaries. Please check the Result API for a full explanation of each key-value pair (`d`, `i`, `l`, ...).
+Because each collection can take 30-60 seconds, to send partial results to users as soon as possible, we provide a field called `tweet_preview`. Thie field is initially empty. When the system has collected 10 tweets, `tweet_preview` will contain a list of dictionaries. Please check the [result API v1 details](/result-api-old.md) for a detailed explanation of each key-value pair (`d`, `i`, `l`, ...).
 ```
 {'status': 'started', 
  'status_percentage': '10', 
@@ -127,8 +127,8 @@ df = pd.read_csv(url)
 ```
 
 
-### Result API (old, depracated)
-[Old result API details](/result-api-old.md).
+### Result API (v1, depracated)
+[Result API v1 details](/result-api-old.md).
 
 
 ### Web Interface
