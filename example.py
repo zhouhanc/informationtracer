@@ -1,6 +1,5 @@
 import requests
 import pandas as pd
-from datetime import date, timedelta
 import time
 from pprint import pprint
 import json
@@ -8,7 +7,7 @@ import os
 
 SUBMIT_URL = 'https://informationtracer.com/submit'
 STATUS_URL = 'https://informationtracer.com/status'
-RESULT_URL = 'https://informationtracer.com/result'
+RESULT_URL = 'https://informationtracer.com/result' # DEPRECATED endpoint
 
 # STEP 1: submit a search query, and get id_hash256 (a unique identifier)
 def step_1_submit(query, token, start_date, end_date):
@@ -51,13 +50,12 @@ def step_2_check_status(id_hash256, token):
 
     while task_status != 'finished' and  current_round < MAX_ROUND:            
         current_round += 1
-        print(current_round)
+        print('checking every 6 seconds, round {}'.format(current_round))
         try:
             full_url = '{}?id_hash256={}&token={}'.format(
                 STATUS_URL, id_hash256, token
                 )
             response = requests.get(full_url, timeout=10).json()            
-            print(response)
             if 'status' in response:
                 # NOTE: can render status_percentage, status_text on the UI
                 task_status = response['status']
@@ -65,9 +63,11 @@ def step_2_check_status(id_hash256, token):
                 status_percentage = response['status_percentage']
                 status_text = response['status_text']
                 tweet_preview = response.get('tweet_preview', None)
-                if tweet_preview:
+                response.pop('tweet_preview', None)
+                print(response)
+                # if tweet_preview:
                     # NOTE: can render tweet_preview on the UI            
-                    print('received {} partial tweets'.format(len(tweet_preview)))
+                    # print('received {} partial tweets'.format(len(tweet_preview)))
 
                 if status != 'finished':
                     time.sleep(6)
@@ -113,13 +113,13 @@ def step_3_get_result_aggregated(id_hash256, token):
 
 if __name__ == '__main__':
     query = 'nvidia AND stock'
-    token = 'XXX'
+    token = 'mmohyu5xd7oyg970t035i4nudfuysmw7'
     start_date = '2023-11-03'
     end_date = '2023-11-06'
 
     id_hash256 = step_1_submit(query, token, start_date, end_date)
     if id_hash256:
-        print(id_hash256)
+        print('Query id_hash256 is {}'.format(id_hash256))
         status = step_2_check_status(id_hash256, token)
         print(status)
         if status == 'finished':
