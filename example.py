@@ -98,6 +98,34 @@ def step_3_get_result_by_platform(source, id_hash256, token):
     return []
 
 
+# STEP 3: get result (well-formatted result per platform)
+def step_3_get_twitter_result_with_premium_feature(id_hash256, token):    
+    num_retry = 0
+    df = None
+    # NOTE: we need to wait a while (~30 seconds) for premium features (sentiment, account_type, etc,.) to become available
+    while num_retry < 6:
+        url = "https://informationtracer.com/download?id={}&source=twitter&type=csv&token={}".format(id_hash256, token)
+        try:
+            df = pd.read_csv(url, lineterminator='\n')
+            account_na_row = df[df['account_type'].isna()].shape[0]
+            sentiment_na_row = df[df['sentiment'].isna()].shape[0]
+            if (df.shape[0] != account_na_row) and (df.shape[0] != sentiment_na_row):
+                print('premium features are available')
+                return df
+            else:
+                print('premium features are not available, wait for 10 seconds.')
+                num_retry += 1
+                time.sleep(10)
+        except Exception as e:
+            print('ERROR getting twitter record.')
+            print(e)
+            return None
+
+    # NOTE: premium features 
+    print('premium features are not available within 60 seconds. server is probably busy')
+    return df
+
+
 # DEPRECATED
 # STEP 3: get result (aggregated, minimized payload and extra intelligence)
 def step_3_get_result_aggregated(id_hash256, token):
@@ -127,7 +155,8 @@ if __name__ == '__main__':
         print(status)
         if status == 'finished':
             # get twitter posts
-            result = step_3_get_result_by_platform('twitter', id_hash256, token)
+            # result = step_3_get_result_by_platform('twitter', id_hash256, token)
+            result = step_3_get_twitter_result_with_premium_feature(id_hash256, token)
             print(result)
             # NOTE: do something with result
             result.to_csv('tweet_result_{}.csv'.format(id_hash256))
