@@ -88,7 +88,7 @@ url = "{}?token={}&id_hash256={}".format(STATUS_URL, token, id_hash256)
 results = requests.get(url).json()
 ```
 
-#### Format of output
+__Format of output__
 Because each collection can take 30-60 seconds, to send partial results to users as soon as possible, we provide a field called `tweet_preview`. Thie field is initially empty. When the system has collected 10 tweets, `tweet_preview` will contain a list of dictionaries. Please check the Result API for a full explanation of each key-value pair (`d`, `i`, `l`, ...).
 ```
 {'status': 'started', 
@@ -115,10 +115,7 @@ Input (required): `source`, `id_hash256`, `token`
 
 `source` is data source, which can be 'twitter', 'youtube', 'reddit', 'all'
 
-### Result API (old, depracated)
-[Old result API details](/result-api-old.md).
-
-#### Format of output 
+__Format of output__
 Output: a pandas dataframe, which can be converted to csv, json, etc,.
 - The columns should be self-explanatory
 - Note that some columns (those with prefix `country_`, `sentiment_` , `account_type_` ) are only available to premium users.
@@ -129,6 +126,9 @@ url = 'https://informationtracer.com/download?source={}&type=csv&id={}&token={}'
 df = pd.read_csv(url)
 ```
 
+
+### Result API (old, depracated)
+[Old result API details](/result-api-old.md).
 
 
 ### Web Interface
