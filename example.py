@@ -112,10 +112,14 @@ def step_3_get_result_aggregated(id_hash256, token):
 
 
 if __name__ == '__main__':
+    ##############################################
+    ############ TODO: CHANGE PARAMETERS #########
     query = 'nvidia AND stock'
     token = 'mmohyu5xd7oyg970t035i4nudfuysmw7'
     start_date = '2023-11-03'
     end_date = '2023-11-06'
+    ##############################################
+    ##############################################
 
     id_hash256 = step_1_submit(query, token, start_date, end_date)
     if id_hash256:
