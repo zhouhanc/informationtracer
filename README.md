@@ -1,30 +1,54 @@
-Information Tracer API Python library
+Information Tracer API Python Library
 ----------------------------
 
-### Who we are
-- [Information Tracer](https://informationtracer.com) provides cross-platform social media intelligence about how information (URL, keyword, hashtag) spreads online. 
-- Some features: search any keyword during any time period; get top posts per platform; visualize sharing network; access indicators of suspicious behaviors. 
-- We currently cover 5 platforms -- Twitter, Facebook, Reddit, Youtube and Instagram.
-- Below is a diagram of our system design. To learn more please check [our paper](http://ceur-ws.org/Vol-2890/paper3.pdf) 
-
-![Information Tracer architecture](./img/information-tracer-pipeline.png)
+This Github repo provides Python scripts to interact with the Information Tracer API.
+Information Tracer is a system to collect social media posts and generate intelligence.
 
 
 ### Pre-requisite 
 - Python 3
-- You must already have a token. If not, contact us to get a token.
+- You must have a valid token. If not, contact us to get a token.
 
 
 ### Overview our three main API endpoins
 1. Use Submit API to submit a query, and get a unique identifier called `id_hash256`
 2. Use Status API to check status of a running query, based on `id_hash256`
 3. Use Result API to get full result of a query, based on `id_hash256`
-4. **For an end-to-end example, please see [example.py](https://github.com/zhouhanc/informationtracer/blob/main/example.py)**
 
-### Submit API
+### Quick Start
+1. Close this repository
+2. `pip install requests pandas`
+3. Update parameters in [example.py](https://github.com/zhouhanc/informationtracer/blob/main/example.py), including query, start_date, end_date, token 
+4. `python example.py`
+
+
+### How to build a search query
+
+Rule 1: `AND`, `OR`, `NOT` must be all-cap. Otherwise they are treated as normal English words
+Rule 2: Use parenthesis to group multiple words with AND. For example, `(Word1 AND Word2)`
+Rule 3: Query limit is 512 characters. Sending a query above the limit might get empty results.
+
+Example: `(Ukraine AND NATO) OR (Ukraine AND EU)`
+Meaning: Any posts that contain "Ukraine" and "NATO" or "Ukraine" and "EU".
+
+Example: `(Ukraine AND NATO) NOT Putin`
+Meaning: Any posts that contain "Ukraine" and "NATO", without word "Putin".
+
+Example: `from:elonmusk`
+Meaning: Collect tweets created by user @elonmusk
+
+Example: `from:elonmusk Tesla`
+Meaning: Collect tweets created by user @elonmusk, and with word "tesla"
+
+
+### Details about Submit API
 Input: `query`, `token`, `start_date`, `end_date`
 
-Optional input: `twitter_only` (if you add `twitter_only` as json key, '1' as value, the API will **only** collect twitter data, no other platform, no LLM-based analysis.)
+Optional input: 
+`twitter_sort_by`: 'time' or 'engagement' (default is 'engagement', if not specified)
+ - set `twitter_sort_by` to 'time' to collect tweets in reverse chronological order (latest to older)
+ - set `twitter_sort_by` to 'engagement' to collect tweets in reverse like_count order
+
 
 Output: `id_hash256` (a unique string identifier for this search)
 
@@ -33,7 +57,7 @@ Example:
 import requests
 SUBMIT_URL = 'https://informationtracer.com/submit'
 
-query = 'nvidia AND scam'
+query = 'nvidia AND stock'
 token = 'YOUR_TOKEN'
 start_date = '2023-11-03'
 end_date = '2023-11-08'
@@ -44,6 +68,7 @@ response = requests.post(SUBMIT_URL,
                                    'token': token,
                                    'start_date': start_date,
                                    'end_date': end_date,
+                                   'twitter_sort_by': 'engagement'
                                    }                                   
                             )
 if 'id_hash256' in response.json():
@@ -51,8 +76,8 @@ if 'id_hash256' in response.json():
 ```
 
 
-### Status API (get status of a running query and partial result (top 5 tweets). must have id_hash256)
-Input: `id_hash256`, `token`, `include_partial_results` (either '0' and '1')
+### Details about Status API
+Input: `id_hash256`, `token`
 Output: json (detail below)
 
 Example:
@@ -60,23 +85,12 @@ Example:
 import requests
 STATUS_URL = 'https://informationtracer.com/status'
 
-url = "{}?token={}&id_hash256={}&include_partial_results={}".format(STATUS_URL, token, id_hash256, 0)
+url = "{}?token={}&id_hash256={}".format(STATUS_URL, token, id_hash256)
 results = requests.get(url).json()
 ```
 
 #### Format of output
-When `include_partial_results` is set to '0', or there is no partial result.
-```
-{'status': 'started', 
- 'status_percentage': '10', 
- 'status_text': 'Collecting cross-platform posts...', 
- 'tweet_preview': None
-}
-```
-
-When `include_partial_results` is set to '1', and there is partial result (by default, the system returns the top 5 tweets by retweet). 
-
-`tweet_preview` is a list of dictionaries. Please check the Result API for a full explanation of each json key (`d`, `i`, `l`, ...).
+Because each collection can take 30-60 seconds, to send partial results to users as soon as possible, we provide a field called `tweet_preview`. Thie field is initially empty. When the system has collected 10 tweets, `tweet_preview` will contain a list of dictionaries. Please check the Result API for a full explanation of each key-value pair (`d`, `i`, `l`, ...).
 ```
 {'status': 'started', 
  'status_percentage': '10', 
@@ -97,9 +111,8 @@ When `include_partial_results` is set to '1', and there is partial result (by de
 }
 ```
 
-
-### Result API (get full results. must have id_hash256)
-Input: `id_hash256`, `token`
+### Result API (aggregated, with intelligence, minimal format)
+Input (required): `id_hash256`, `token`
 Output: json (detail below)
 ```python
 import requests
@@ -111,7 +124,6 @@ results = requests.get(url).json()
 
 #### Format of output 
 The returned data is in json format, with following keys
-
 - `query`: the search query 
 - `created_at`: time the search query is submitted
 - `id_hash256`: unique ID (identifier) for this query
@@ -255,28 +267,22 @@ The returned data is in json format, with following keys
 }
 ```
 
-<!-- ### Additional API -- Load Source (get detailed posts from a particular platform)
-For detailed specification of this API, please contact us.
+
+### Result API 2 (by platform, well-formatted)
+Input (required): `source`, `id_hash256`, `token`
+
+source can be 'twitter', 'youtube', 'reddit', 'all'
+
+Output: json (detail below)
 ```python
-import requests
-url = "https://informationtracer.com/loadsource?source={}&id_hash256={}&token={}".format(SOURCE, id_hash256, YOUR_TOKEN)
-results = requests.get(url).json()
-``` -->
-
-<!-- ![Screenshot of Information Tracer Wen Interface](./img/information-tracer-web-interface-screenshot.png) -->
+import pandas as pd
 
 
-### Tips on how to build advanced search query
-#### Important rules
-- `AND`, `OR`, `NOT` must be all-cap. Otherwise they are treated as normal English words
-- Use parenthesis to group multiple words with AND. For example, `(Word1 AND Word2)`
-- Query limit is 512 characters. Sending a query above the limit might get empty results.
+url = 'https://informationtracer.com/download?source={}&type=csv&id={}&token={}'.format(source, id_hash256, token)
+df = pd.read_csv(url)
+```
 
-Example: `(Ukraine AND NATO) OR (Ukraine AND EU)`
-Meaning: Any posts that contain "Ukraine" and "NATO" or "Ukraine" and "EU".
 
-Example: `(Ukraine AND NATO) NOT Putin`
-Meaning: Any posts that contain "Ukraine" and "NATO", without word "Putin".
 
 ### Web Interface
 - To help people visualize the information, we provide a web interface available at [https://informationtracer.com](https://informationtracer.com). 
@@ -285,11 +291,3 @@ Meaning: Any posts that contain "Ukraine" and "NATO", without word "Putin".
 
 ### Contact / Bug Report
 For bug report or any inquiry, please contact Zhouhan Chen zhouhan@safelink.network
-
-
-<!-- ### Media coverage
-- [Information Tracer, a proactive framework to fight COVID-19 infodemic](https://nyudatascience.medium.com/cds-guest-editorial-information-tracer-a-proactive-framework-to-fight-covid-19-infodemic-3f9766936f94)
-- [NYC Media Lab Announces Inaugural Cohort of AI & Local News Challenge](https://www.nycmedialab.org/ai-local-news-blog-update/nyc-media-lab-announces-inaugural-cohort-of-ai-amp-local-news-challenge) 
-
-
- -->

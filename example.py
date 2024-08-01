@@ -1,4 +1,5 @@
 import requests
+import pandas as pd
 from datetime import date, timedelta
 import time
 from pprint import pprint
@@ -11,6 +12,13 @@ RESULT_URL = 'https://informationtracer.com/result'
 
 # STEP 1: submit a search query, and get id_hash256 (a unique identifier)
 def step_1_submit(query, token, start_date, end_date):
+    """
+    query: string
+    token: string
+    start_date: string in format yyyy-mm-dd
+    end_date: string in format yyyy-mm-dd
+    twitter_sort_by: 'engagement' or 'time'
+    """    
     id_hash256 = None
     try:
         response = requests.post(SUBMIT_URL, 
@@ -18,7 +26,8 @@ def step_1_submit(query, token, start_date, end_date):
                              json={'query': query, 
                                    'token': token,
                                    'start_date': start_date,
-                                    'end_date': end_date,
+                                   'end_date': end_date,
+                                   'twitter_sort_by': 'engagement'
                                    }                                   
                             )
         if 'id_hash256' in response.json():
@@ -39,14 +48,13 @@ def step_2_check_status(id_hash256, token):
     task_status = None
     MAX_ROUND = 40
     current_round = 0
-    include_partial_results = 1
 
     while task_status != 'finished' and  current_round < MAX_ROUND:            
         current_round += 1
         print(current_round)
         try:
-            full_url = '{}?id_hash256={}&token={}&include_partial_results={}'.format(
-                STATUS_URL, id_hash256, token, include_partial_results
+            full_url = '{}?id_hash256={}&token={}'.format(
+                STATUS_URL, id_hash256, token
                 )
             response = requests.get(full_url, timeout=10).json()            
             print(response)
@@ -60,8 +68,6 @@ def step_2_check_status(id_hash256, token):
                 if tweet_preview:
                     # NOTE: can render tweet_preview on the UI            
                     print('received {} partial tweets'.format(len(tweet_preview)))
-                    # TO save bandwidth, we can tell the API not to return partial results
-                    include_partial_results = 0
 
                 if status != 'finished':
                     time.sleep(6)
@@ -80,8 +86,8 @@ def step_2_check_status(id_hash256, token):
     return 'timeout'
 
 
-# STEP 3: get full results
-def step_3_get_result(id_hash256, token):
+# STEP 3: get result (aggregated, minimized payload and extra intelligence)
+def step_3_get_result_aggregated(id_hash256, token):
     try:
         response = requests.get('{}?token={}&id_hash256={}'.format(RESULT_URL, token, id_hash256), timeout=10)
         pprint(response.json().keys())
@@ -91,13 +97,23 @@ def step_3_get_result(id_hash256, token):
 
     return []
 
+# STEP 3.2: get result (well-formatted result per platform)
+def step_3_get_result_formatted(source, id_hash256, token):    
+    try:
+        url = 'https://informationtracer.com/download?source={}&type=csv&id={}&token={}'.format(source, id_hash256, token)
+        df = pd.read_csv(url)
+        return df
+    except Exception as e:
+        print(e)
+
+    return []
 
 
 if __name__ == '__main__':
-    query = 'nvidia AND scam'
+    query = 'nvidia AND stock'
     token = 'XXX'
     start_date = '2023-11-03'
-    end_date = '2023-11-08'
+    end_date = '2023-11-06'
 
     id_hash256 = step_1_submit(query, token, start_date, end_date)
     if id_hash256:
